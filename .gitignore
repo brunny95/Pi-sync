@@ -1,0 +1,6 @@
+auth.json
+models-store.json
+sessions/
+bin/
+node_modules/
+*.bak.*

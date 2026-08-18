@@ -1,0 +1,8 @@
+{
+  "name": "pi-extensions",
+  "private": true,
+  "dependencies": {
+    "@gotgenes/pi-anthropic-auth": "^2.0.6",
+    "pi-caveman": "^1.0.8"
+  }
+}
