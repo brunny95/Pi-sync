@@ -1,9 +1,9 @@
 {
-  "lastChangelogVersion": "0.84.1",
+  "lastChangelogVersion": "0.84.2",
   "theme": "dark",
   "defaultProvider": "anthropic",
-  "defaultModel": "claude-opus-4-8",
-  "defaultThinkingLevel": "high",
+  "defaultModel": "claude-opus-4-6",
+  "defaultThinkingLevel": "max",
   "packages": [
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:pi-caveman"
