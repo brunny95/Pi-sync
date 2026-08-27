@@ -1,9 +1,15 @@
 {
   "lastChangelogVersion": "0.84.3",
   "theme": "dark",
+<<<<<<< HEAD
   "defaultProvider": "anthropic",
   "defaultModel": "claude-opus-4-6",
   "defaultThinkingLevel": "max",
+=======
+  "defaultProvider": "deepseek",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "high",
+>>>>>>> d1d9283 (Remove awtotty/pi-opencode package; stale opencode-go model list hid gpt-5.6-luna)
   "packages": [
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:pi-caveman"
