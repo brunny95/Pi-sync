@@ -7,8 +7,12 @@ How my `pi` configuration stays mirrored across machines.
 under `~/.pi/agent/` are **symlinks** into it, so editing config *is* editing the
 repo. `./sync.sh` reconciles everything with GitHub.
 
+`settings.json` is the exception: it is **generated** from two files, so shared
+config syncs while each machine keeps its own default model/provider:
+
 ```
-~/.pi/agent/settings.json  ──symlink──►  ~/pi-config/agent/settings.json  ──git──►  GitHub
+~/.pi/agent/settings.json  ◄──  agent/settings.json                (shared, in repo)
+                          ◄──  agent/settings.local.<hostname>.json (per machine, in repo)
 ```
 
 ## Everyday workflow
@@ -21,6 +25,12 @@ you want to publish it:
 ```
 That commits anything uncommitted, pulls, and pushes. Run it on the other
 machine to pull the change down.
+
+Settings are split:
+- **Shared** (`theme`, `packages`, ...) → edit `agent/settings.json`.
+- **This machine's default model/provider** → edit
+  `agent/settings.local.<hostname>.json`, or just use `/model` in pi (sync.sh
+  picks it up).
 
 > Tip: for changes worth a real history entry, commit yourself first with a good
 > message, then run sync — it only auto-commits leftovers.
@@ -48,10 +58,11 @@ Accidentally created it live in `~/.pi/agent/extensions/myext` first? Adopt it:
 ```
 
 ## Adding npm-package extensions
-Install as usual (updates `~/.pi/agent/npm/package.json`, which is a symlink into
-the repo), then:
+Install as usual with `pi install npm:...`. That writes the package into
+`~/.pi/agent/npm/package.json` (a symlink into the repo) **and** adds it to the
+`packages` list in the live `~/.pi/agent/settings.json`. Then:
 ```bash
-~/pi-config/sync.sh          # runs npm install only when deps changed
+~/pi-config/sync.sh          # adopts the packages change + runs npm install if deps changed
 ```
 
 ## Setting up a NEW machine
@@ -72,22 +83,31 @@ cat ~/.ssh/id_ed25519_pisync.pub
 
 # 2. clone + activate
 git clone git@github-pisync:brunny95/Pi-sync.git ~/pi-config
-~/pi-config/sync.sh          # links config, runs npm install
+~/pi-config/sync.sh          # links config, creates settings.local.<hostname>.json from example
 
-# 3. start pi and log in once (creates local auth.json)
+# 3. set this machine's defaults, then re-sync
+$EDITOR ~/pi-config/agent/settings.local.$(hostname -s).json   # defaultProvider/model/thinking
+~/pi-config/sync.sh
+
+# 4. start pi and log in once (creates local auth.json)
 ```
 
 ## What is / isn't synced
-**Synced (in the repo):** `APPEND_SYSTEM.md`, `settings.json`, `keybindings.json`,
+**Synced (in the repo):** `APPEND_SYSTEM.md`, `settings.json` (shared keys),
+`settings.local.<hostname>.json` (each machine's defaults), `keybindings.json`,
 `npm/package.json` + `package-lock.json`, `extensions/*`, `skills/*` (if any).
 
 **Local only (gitignored, per machine):** `auth.json` (login/secrets),
-`models-store.json` (cache), `bin/`, `npm/node_modules/`, `sessions/`.
+`models-store.json` (cache), `bin/`, `npm/node_modules/`, `sessions/`, and the
+generated `~/.pi/agent/settings.json` (rebuilt from the two files above).
 
 You log in to pi **once per machine** — auth never leaves the machine.
 
 ## Conflicts
-If both machines edited the same thing, `sync.sh` stops at the pull:
+Per-machine defaults (`defaultProvider`/`defaultModel`/`defaultThinkingLevel`)
+live in separate `settings.local.<hostname>.json` files, so they never conflict.
+Conflicts now only happen if both machines edited the *same shared* file. In
+that case `sync.sh` stops at the pull:
 ```
 ERROR: pull/rebase conflict. Fix in ~/pi-config, then: git rebase --continue
 ```
@@ -104,8 +124,10 @@ git rebase --continue
 - **`Permission denied (publickey)`** → deploy key missing/not write-enabled on
   this machine. Re-check `https://github.com/brunny95/Pi-sync/settings/keys`.
   Test with: `ssh -T git@github-pisync` (expect "Hi brunny95/Pi-sync!").
-- **pi doesn't pick up a change** → confirm the file is a symlink:
-  `ls -l ~/.pi/agent/<file>`. If it's a real file, run `./sync.sh` to relink.
+- **pi doesn't pick up a change** → run `./sync.sh`. For everything except
+  `settings.json`, confirm the file is a symlink: `ls -l ~/.pi/agent/<file>`.
+  `settings.json` is generated (not a symlink) — its sources are
+  `agent/settings.json` + `agent/settings.local.<hostname>.json`.
 - **A symlink broke** (target renamed) → `./sync.sh` recreates it.
 - **Restore a pre-symlink original** → backups are saved as
   `~/.pi/agent/<name>.bak.<timestamp>` the first time linking runs.
