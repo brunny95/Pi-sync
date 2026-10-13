@@ -2,5 +2,5 @@
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4-pro",
   "defaultThinkingLevel": "high",
-  "lastChangelogVersion": "0.84.1"
+  "lastChangelogVersion": "1.2.0"
 }
