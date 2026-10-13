@@ -199,9 +199,14 @@ npm_install_if_needed "$PRE" "$POST"
 
 if has_remote; then
   if has_upstream; then
-    [ -n "$(git rev-list '@{u}..HEAD' 2>/dev/null)" ] && { git push && say "pushed"; }
+    if [ -n "$(git rev-list '@{u}..HEAD' 2>/dev/null)" ]; then
+      git push || die "push failed. Check credentials/network, then re-run."
+      say "pushed"
+    fi
   else
-    git push -u origin "$(git symbolic-ref --short HEAD)" && say "pushed (upstream set)"
+    git push -u origin "$(git symbolic-ref --short HEAD)" \
+      || die "push failed (setting upstream). Check credentials/network, then re-run."
+    say "pushed (upstream set)"
   fi
 fi
 
