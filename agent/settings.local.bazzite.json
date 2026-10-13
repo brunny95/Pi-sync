@@ -1,6 +1,6 @@
 {
   "defaultProvider": "opencode-go",
-  "defaultModel": "deepseek-v4-pro",
+  "defaultModel": "kimi-k3",
   "defaultThinkingLevel": "high",
   "lastChangelogVersion": "1.2.0"
 }
