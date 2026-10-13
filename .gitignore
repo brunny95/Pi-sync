@@ -4,3 +4,4 @@ sessions/
 bin/
 node_modules/
 *.bak.*
+.scratch/
