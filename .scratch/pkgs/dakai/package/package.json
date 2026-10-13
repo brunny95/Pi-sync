@@ -1,0 +1,45 @@
+{
+  "name": "pi-opencode-go-usage",
+  "version": "1.1.1",
+  "description": "Track OpenCode Go usage limits (rolling 5h / weekly / monthly) in Pi — status bar + /opencode-go report via the console API.",
+  "author": "Dakai",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "omp",
+    "opencode",
+    "usage",
+    "go",
+    "quota",
+    "status-bar"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dakai/pi-opencode-go-usage.git"
+  },
+  "homepage": "https://github.com/Dakai/pi-opencode-go-usage#readme",
+  "bugs": {
+    "url": "https://github.com/Dakai/pi-opencode-go-usage/issues"
+  },
+  "files": [
+    "extensions",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "omp": {
+    "extensions": [
+      "./extensions/opencode-go-usage.ts"
+    ]
+  },
+  "pi": {
+    "extensions": [
+      "./extensions/opencode-go-usage.ts"
+    ],
+    "image": "https://raw.githubusercontent.com/Dakai/pi-opencode-go-usage/main/assets/pi-opencode-go-usage.png"
+  }
+}

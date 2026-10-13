@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "@gotgenes/pi-anthropic-auth": "^2.0.10",
+    "@oscarfalero/pi-opencode-go": "^0.1.1",
     "pi-caveman": "^1.0.8"
   }
 }
