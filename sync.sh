@@ -179,6 +179,7 @@ PY
 npm_install_if_needed() {
   local pre="$1" post="$2" need=0
   [ -d "$TARGET/npm/node_modules" ] || need=1
+  [ "$need" = 1 ] || ( cd "$TARGET/npm" && npm ls --depth=0 >/dev/null 2>&1 ) || need=1   # declared deps missing
   if [ -n "$pre" ] && [ "$pre" != "$post" ]; then
     git -C "$REPO_DIR" diff --name-only "$pre" "$post" -- agent/npm/ | grep -q . && need=1
   fi
