@@ -1,3 +1,4 @@
 # Always LF: scripts/extensions are run by bash/node on Linux and Windows (Git Bash).
 * text=auto eol=lf
 *.sh text eol=lf
+*.cmd text eol=crlf

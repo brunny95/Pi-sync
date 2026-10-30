@@ -19,6 +19,9 @@ HOST="$(hostname -s 2>/dev/null || hostname)"
 
 say() { printf '%s\n' "$*"; }
 die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
+for _t in git python3 npm; do
+  command -v "$_t" >/dev/null 2>&1 || die "$_t not found in PATH"
+done
 has_remote()   { git -C "$REPO_DIR" remote get-url origin >/dev/null 2>&1; }
 has_upstream() { git -C "$REPO_DIR" rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; }
 
