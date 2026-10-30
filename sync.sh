@@ -5,7 +5,15 @@
 set -uo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET="$HOME/.pi/agent"
+# Windows (Git Bash/MSYS): HOME may be redirected, but pi reads %USERPROFILE%\.pi\agent.
+IS_WIN=0
+case "$(uname -s 2>/dev/null)" in MINGW*|MSYS*|CYGWIN*) IS_WIN=1 ;; esac
+if [ "$IS_WIN" = 1 ]; then
+  export MSYS=winsymlinks:nativestrict   # real symlinks or fail (never silent copies)
+  TARGET="$(cygpath -u "${USERPROFILE:-$HOME}")/.pi/agent"
+else
+  TARGET="$HOME/.pi/agent"
+fi
 STAMP="$(date +%Y%m%d-%H%M%S)"
 HOST="$(hostname -s 2>/dev/null || hostname)"
 
@@ -14,18 +22,34 @@ die() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 has_remote()   { git -C "$REPO_DIR" remote get-url origin >/dev/null 2>&1; }
 has_upstream() { git -C "$REPO_DIR" rev-parse --abbrev-ref --symbolic-full-name '@{u}' >/dev/null 2>&1; }
 
+# Create dst -> src. On Windows without Developer Mode/admin, symlinks are
+# refused, so fall back to a junction (dirs) or hard link (files); both need
+# no privileges and are recognised by `-ef` below.
+make_link() {
+  local src="$1" dst="$2"
+  ln -s "$src" "$dst" 2>/dev/null && return 0
+  [ "$IS_WIN" = 1 ] || { ln -s "$src" "$dst"; return; }
+  if [ -d "$src" ]; then
+    cmd.exe //c mklink //J "$(cygpath -w "$dst")" "$(cygpath -w "$src")" >/dev/null
+  else
+    cmd.exe //c mklink //H "$(cygpath -w "$dst")" "$(cygpath -w "$src")" >/dev/null
+  fi
+}
+
 link() {
   local src="$1" dst="$2"
   [ -e "$src" ] || return 0
   mkdir -p "$(dirname "$dst")"
-  if [ -L "$dst" ] && [ "$(readlink -f "$dst")" = "$(readlink -f "$src")" ]; then
+  if [ "$dst" -ef "$src" ]; then
     return 0
   fi
-  if [ -e "$dst" ] || [ -L "$dst" ]; then
+  if [ -f "$dst" ] && [ ! -L "$dst" ] && [ -f "$src" ] && cmp -s "$src" "$dst"; then
+    rm -f "$dst"          # identical stale copy/broken hard link: no backup needed
+  elif [ -e "$dst" ] || [ -L "$dst" ]; then
     mv "$dst" "$dst.bak.$STAMP"
     say "backed up  $dst -> $dst.bak.$STAMP"
   fi
-  ln -s "$src" "$dst"
+  make_link "$src" "$dst" || die "cannot link $dst -> $src"
   say "linked     $dst -> $src"
 }
 
